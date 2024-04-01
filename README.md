@@ -5,7 +5,7 @@ This repository includes:
 ## Usage
 - Partition modes are first predicted by 'gen_file/gen_file.py', command:
 ```
-python gen_file.py --model_path="./trained_models/" --seq_path="./yuv/" --threshold=0.15
+python gen_file.py --model_path="./trained_models/" --seq_path="./yuv/"
 ```
 - Use VVCSoftware_VTM-VTM-10.2-fast for fast intra coding. Before encoding, search for 'your_path' in source/Lib/EncoderLib/EncGOP.cpp to edit it to your folder path for the predicted partition modes.
 ## Note
