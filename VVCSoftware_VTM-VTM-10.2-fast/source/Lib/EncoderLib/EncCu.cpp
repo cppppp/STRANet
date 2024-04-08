@@ -147,7 +147,6 @@ void EncCu::create( EncCfg* encCfg )
 
 void EncCu::destroy()
 {
-  //fclose(fp);
   unsigned numWidths  = gp_sizeIdxInfo->numWidths();
   unsigned numHeights = gp_sizeIdxInfo->numHeights();
 

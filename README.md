@@ -12,4 +12,4 @@ python gen_file.py --model_path="./trained_models/" --seq_path="./yuv/"
 - Pytorch 1.8.1+cu111
 ## Note
 - gen_file/new_stf.py is based on https://github.com/Googolxx/STF
-- More code will be released soon, including a libtorch version for partition modes prediction.
+- The demo encodes 4 intra frames by default
