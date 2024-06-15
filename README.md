@@ -1,7 +1,9 @@
 # STRANet
 This repository includes:
-- Python version partition modes prediction 
-- VTM that loads the predicted partition modes from files and encodes with higher speed
+- gen_file: Python version partition modes prediction 
+- VVCSoftware_VTM-VTM-10.2-fast: VTM that loads the predicted partition modes from files and encodes with higher speed
+- train_model: train prediction models
+- VTM_libtorch: incorporate the prediction model into VTM using libtorch
 ## Usage
 - Partition modes are first predicted by 'gen_file/gen_file.py', command:
 ```

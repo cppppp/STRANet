@@ -1424,7 +1424,6 @@ void EncCu::xCheckModeSplit(CodingStructure *&tempCS, CodingStructure *&bestCS, 
         tempCS->cost = m_pcRdCost->calcRdCost( tempCS->fracBits, tempCS->dist );
         if( tempCS->cost > bestCS->cost )
         {
-          //restrict_add 未修改
           tempCS->cost = MAX_DOUBLE;
           tempCS->costDbOffset = 0;
           tempCS->useDbCost = m_pcEncCfg->getUseEncDbOpt();
@@ -1866,7 +1865,6 @@ bool EncCu::xCheckRDCostIntra(CodingStructure *&tempCS, CodingStructure *&bestCS
                                           : cu.rootCbf;
             if( cbfAtZeroDepth )
             {
-              tempCS->cost = MAX_DOUBLE; //restrict_add 未修改
               tmpCostWithoutSplitFlags = MAX_DOUBLE;
             }
           }

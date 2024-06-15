@@ -1,5 +1,5 @@
 from network import *
-from deepqtmt_utils import import_yuv_4frame,copy_value
+from STRANet_utils import import_yuv_4frame,copy_value
 import os,torch,time
 from new_stf import Win_noShift_Attention
 import gc
