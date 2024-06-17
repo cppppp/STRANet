@@ -154,13 +154,8 @@ public:
   int my_POC;
   int init_flag;
   int fastpartition[4][550][970][9][9][4][7];
-#if REUSE_ALL
-  int reuse_record[2][32][32][5][5][6][6]; //第3,4维的第二个永远不会用到
-#endif
-
-#if VERY_FAST_MODE
   int chromapartition[4][40][70][5]; //3840/64 2160/64
-#endif
+
 private:
   FILE* fp;
   string inputYUVname;

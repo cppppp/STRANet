@@ -1,3 +1,4 @@
+//This is for CPU encoding
 #include "torch/torch.h"
 #include "torch/script.h"
 #include "FastPartition.h"
@@ -28,18 +29,18 @@ void FastPartition::init_luma_feature_maps(int w, int h, int qp, int (*output_ar
   
   for(int i=0;i<6;i++){
     res[i*2]=torch::jit::load("./Window_pt_models/"+std::to_string(i)+"/res-0.pt"); 
-    res[i*2].to(torch::kCUDA);
+    //res[i*2].to(torch::kCUDA);
     res[i*2].eval();
     res[i*2+1]=torch::jit::load("./Window_pt_models/"+std::to_string(i)+"/res-1.pt"); 
-    res[i*2+1].to(torch::kCUDA);
+    //res[i*2+1].to(torch::kCUDA);
     res[i*2+1].eval();
     subnet[i]=torch::jit::load("./Window_pt_models/"+std::to_string(i)+"/res-2.pt");
-    subnet[i].to(torch::kCUDA);
+    //subnet[i].to(torch::kCUDA);
     subnet[i].eval();
   }
   auto eT = std::chrono::system_clock::now();
   auto duration = std::chrono::duration_cast<std::chrono::microseconds>(eT - sT).count();
-  printf("loading model takes:%d microseconds\n",(int)duration);
+  printf("load mode takes:%d microseconds\n",(int)duration);
 
   int batch_size_0=512;
   int batch_size_1=512;
@@ -53,7 +54,7 @@ void FastPartition::init_luma_feature_maps(int w, int h, int qp, int (*output_ar
   torch::nn::MaxPool2d maxpool=torch::nn::MaxPool2d(maxpool_options(2,2));
   torch::Tensor y_down = maxpool(org_imageBatch);
   torch::Tensor cattensors = torch::cat({y_down,uv_imageBatch},1);
-  cattensors=cattensors.to(torch::kFloat32);
+  //cattensors=cattensors.to(torch::kFloat32);
   int pos_list[4*(h/32)*(w/32)][3];//frame_num,h,w
   std::vector<torch::Tensor> input_list;
   int input_size=0;
@@ -82,12 +83,12 @@ void FastPartition::init_luma_feature_maps(int w, int h, int qp, int (*output_ar
       batch_end_idx=input_size%batch_size_5;
     }
     int start_idx=k*batch_size_5;
-    input.push_back(cattensors.slice(0,k*batch_size_5,end_idx).to(torch::kCUDA));
+    input.push_back(cattensors.slice(0,k*batch_size_5,end_idx));//.to(torch::kCUDA));
     feature_tensor[0]=(torch::Tensor)(res[10].forward(input).toTensor());
     input.pop_back();
      
     input.push_back(feature_tensor[0]);
-    feature_tensor[1]=(torch::Tensor)(res[11].forward(input).toTensor().to(torch::kCUDA));
+    feature_tensor[1]=(torch::Tensor)(res[11].forward(input).toTensor());//.to(torch::kCUDA));
     input.pop_back();
     torch::Tensor input_atten=(torch::ones({end_idx-start_idx}, torch::dtype(torch::kLong))*(long)qp).to(torch::kCUDA);
 
@@ -169,7 +170,7 @@ void FastPartition::init_luma_feature_maps(int w, int h, int qp, int (*output_ar
     }
     int start_idx=k*batch_size_0;
     
-    input.push_back(cattensors.slice(0,k*batch_size_0,end_idx).to(torch::kCUDA));
+    input.push_back(cattensors.slice(0,k*batch_size_0,end_idx));//.to(torch::kCUDA));
     feature_tensor[0]=(torch::Tensor)(res[0].forward(input).toTensor());
     input.pop_back();
 
@@ -177,7 +178,7 @@ void FastPartition::init_luma_feature_maps(int w, int h, int qp, int (*output_ar
     feature_tensor[1]=(torch::Tensor)(res[1].forward(input).toTensor());
     input.pop_back();
 
-    torch::Tensor input_atten=(torch::ones({end_idx-start_idx}, torch::dtype(torch::kLong))*(long)qp).to(torch::kCUDA);
+    torch::Tensor input_atten=(torch::ones({end_idx-start_idx}, torch::dtype(torch::kLong))*(long)qp);//.to(torch::kCUDA);
     input.push_back(feature_tensor[1]);
     input.push_back(input_atten);
     torch::Tensor output = (torch::Tensor)(subnet[0].forward(input).toTensor()).cpu();
@@ -247,7 +248,7 @@ void FastPartition::init_luma_feature_maps(int w, int h, int qp, int (*output_ar
       }
     }
   }
-  //16x32模型
+  //16x32
   input_size=input_list_2.size();
   tensorlist= torch::TensorList{input_list_2};
   cattensors = torch::cat(tensorlist);
@@ -262,7 +263,7 @@ void FastPartition::init_luma_feature_maps(int w, int h, int qp, int (*output_ar
       batch_end_idx=input_size%batch_size_1;
     }
     int start_idx=k*batch_size_1;
-    input.push_back(cattensors.slice(0,k*batch_size_1,end_idx).to(torch::kCUDA));
+    input.push_back(cattensors.slice(0,k*batch_size_1,end_idx));//.to(torch::kCUDA));
     feature_tensor[0]=(torch::Tensor)(res[4].forward(input).toTensor());
     input.pop_back();
 
@@ -271,7 +272,7 @@ void FastPartition::init_luma_feature_maps(int w, int h, int qp, int (*output_ar
     input.pop_back();
     
     torch::Tensor input_atten=torch::ones({end_idx-start_idx}, torch::dtype(torch::kLong))*(long)qp*2;
-    input_atten= (input_atten+qptensor.slice(0,start_idx,end_idx)).to(torch::kCUDA);
+    input_atten= (input_atten+qptensor.slice(0,start_idx,end_idx));//.to(torch::kCUDA);
     input.push_back(feature_tensor[1]);
     input.push_back(input_atten);
     torch::Tensor output = (torch::Tensor)(subnet[2].forward(input).toTensor()).cpu();
@@ -389,7 +390,7 @@ void FastPartition::init_luma_feature_maps(int w, int h, int qp, int (*output_ar
       batch_end_idx=input_size%batch_size_2;
     }
     int start_idx=k*batch_size_2;
-    input.push_back(cattensors.slice(0,k*batch_size_2,end_idx).to(torch::kCUDA));
+    input.push_back(cattensors.slice(0,k*batch_size_2,end_idx));//.to(torch::kCUDA));
     feature_tensor[0]=(torch::Tensor)(res[2].forward(input).toTensor());
     input.pop_back();
 
@@ -398,7 +399,7 @@ void FastPartition::init_luma_feature_maps(int w, int h, int qp, int (*output_ar
     input.pop_back();
 
     torch::Tensor input_atten=(torch::ones({end_idx-start_idx}, torch::dtype(torch::kLong))*(long)qp*4
-                              +qptensor.slice(0,start_idx,end_idx)).to(torch::kCUDA);
+                              +qptensor.slice(0,start_idx,end_idx));//.to(torch::kCUDA);
     input.push_back(feature_tensor[1]);
     input.push_back(input_atten);
     torch::Tensor output = (torch::Tensor)(subnet[1].forward(input).toTensor()).cpu();
@@ -465,7 +466,7 @@ void FastPartition::init_luma_feature_maps(int w, int h, int qp, int (*output_ar
       batch_end_idx=input_size%batch_size_3;
     }
     int start_idx=k*batch_size_3;
-    input.push_back(cattensors.slice(0,k*batch_size_3,end_idx).to(torch::kCUDA));
+    input.push_back(cattensors.slice(0,k*batch_size_3,end_idx));//.to(torch::kCUDA));
     feature_tensor[0]=(torch::Tensor)(res[6].forward(input).toTensor());
     input.pop_back();
 
@@ -474,7 +475,7 @@ void FastPartition::init_luma_feature_maps(int w, int h, int qp, int (*output_ar
     input.pop_back();
 
     torch::Tensor input_atten=(torch::ones({end_idx-start_idx}, torch::dtype(torch::kLong))*(long)qp*2
-                              +qptensor.slice(0,start_idx,end_idx)).to(torch::kCUDA);
+                              +qptensor.slice(0,start_idx,end_idx));//.to(torch::kCUDA);
     input.push_back(feature_tensor[1]);
     input.push_back(input_atten);
     torch::Tensor output = (torch::Tensor)(subnet[3].forward(input).toTensor()).cpu();
@@ -557,7 +558,7 @@ void FastPartition::init_luma_feature_maps(int w, int h, int qp, int (*output_ar
       batch_end_idx=input_size%batch_size_4;
     }
     int start_idx=k*batch_size_4;
-    input.push_back(cattensors.slice(0,k*batch_size_4,end_idx).to(torch::kCUDA));
+    input.push_back(cattensors.slice(0,k*batch_size_4,end_idx));//.to(torch::kCUDA));
     feature_tensor[0]=(torch::Tensor)(res[8].forward(input).toTensor());
     input.pop_back();
 
@@ -566,7 +567,7 @@ void FastPartition::init_luma_feature_maps(int w, int h, int qp, int (*output_ar
     input.pop_back();
 
     torch::Tensor input_atten=(torch::ones({end_idx-start_idx}, torch::dtype(torch::kLong))*(long)qp*3
-                              +qptensor.slice(0,start_idx,end_idx)).to(torch::kCUDA);
+                              +qptensor.slice(0,start_idx,end_idx));//.to(torch::kCUDA);
     input.push_back(feature_tensor[1]);
     input.push_back(input_atten);
     torch::Tensor output = (torch::Tensor)(subnet[4].forward(input).toTensor()).cpu();

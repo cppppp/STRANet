@@ -24,7 +24,6 @@ class Solver(object):
         self.device = torch.device('cuda:{}'.format(gpus[0]) if torch.cuda.is_available() else 'cpu')
         self.cuSize=config.cuSize
         self.isTrain=config.isTrain
-        self.isDebug=config.isDebug
 
         self.lr = config.lr
         self.beta1 = config.beta1
@@ -54,7 +53,6 @@ class Solver(object):
 
         for i,module in enumerate(self.cuSize_list):
             my_load_state_dict(module,torch.load(os.path.join(self.model_path, str(self.cuSize)+'_only_win/module-%d.pkl' % (i))))
-            #my_load_state_dict(module,torch.load("../ablation-network/trained_models/10-17-models/"+str(self.cuSize)+'/module-%d.pkl' % (i)))
 
     def build_model(self):
         self.res=[]
@@ -65,7 +63,6 @@ class Solver(object):
 
         if self.cuSize%5==0:
             self.res.append(Win_noShift_Attention(dim=16, window_size=(8,8),num_heads=4))
-            #self.res.append(Win_noShift_Attention(dim=16, window_size=(32,32),num_heads=4))
         elif self.cuSize==1:
             self.res.append(Win_noShift_Attention(dim=16, window_size=(16,16),num_heads=4))
         elif self.cuSize==2:
@@ -202,8 +199,7 @@ class Solver(object):
                 
                     #validation
                     self.validate(valid_loader)
-                    if not self.isDebug:
-                        self.save_model()
+                    self.save_model()
                     total_remains=0
                     total_acc=0.
                     total_length=0

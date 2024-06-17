@@ -1,15 +1,19 @@
 # STRANet
 This repository includes:
+- gen_dataset: generate dataset for training
+- train_model: train prediction models
 - gen_file: Python version partition modes prediction 
 - VVCSoftware_VTM-VTM-10.2-fast: VTM that loads the predicted partition modes from files and encodes with higher speed
-- train_model: train prediction models
-- VTM_libtorch: incorporate the prediction model into VTM using libtorch
+- VTM_libtorch: incorporate the prediction model into VTM using LibTorch
 ## Usage
+- To generate the dataset, first use gen_dataset/flip.py to generate eight rotation types. Then use gen_dataset/VVCSoftware_VTM-VTM-10.2-dataset to get the ground truth partition modes. Finally, run gen_dataset_distrib_v2.py to get the probabilities for each partition mode.
+- To train the model, run train_model/STRANet.py
 - Partition modes are first predicted by 'gen_file/gen_file.py', command:
 ```
-python gen_file.py --model_path="./trained_models/" --seq_path="./yuv/"
+python gen_file.py --model_path="./trained_models_Window/" --seq_path="./yuv/"
 ```
 - Use VVCSoftware_VTM-VTM-10.2-fast for fast intra coding. Before encoding, search for 'your_path' in source/Lib/EncoderLib/EncGOP.cpp to edit it to your folder path for the predicted partition modes.
+- See [VTM_libtorch/README.md](./VTM_libtorch/README.md) for the LibTorch version's Usage
 ## Requirements and Dependencies
 - Pytorch 1.8.1+cu111
 ## Note

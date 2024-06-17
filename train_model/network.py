@@ -19,12 +19,12 @@ class subset(nn.Module):
             nn.BatchNorm2d(ch_out),
             nn.ReLU(inplace=True),
         )
-        self.cov=nn.Conv2d(self.ch_in, self.ch_out, kernel_size=1,stride=1,padding=0,bias=True)
-        self.rel=nn.ReLU(inplace=True)
+        self.cov = nn.Conv2d(self.ch_in, self.ch_out, kernel_size=1,stride=1,padding=0,bias=True)
+        self.rel = nn.ReLU(inplace=True)
 
     def forward(self,x):
         x1 = self.net(x)
-        x3=x1+x
+        x3 = x1 + x
         return x3
 
 class single_conv(nn.Module):
@@ -54,8 +54,6 @@ class subnet2(nn.Module):
         res=x.clone()
         atten_value_1=self.atten_module_1[qp_list]
         res=res*(atten_value_1.view(atten_value_1.shape[0],atten_value_1.shape[1],1,1))
-        '''for i in range(batch_size):
-            res[i,0:8,:,:]*=qp_list[i]'''
         
         res=self.Conv1(res)
         res=self.Conv2(res)
@@ -65,9 +63,6 @@ class subnet2(nn.Module):
 
         atten_value_2=self.atten_module_2[qp_list]
         res2=res2*atten_value_2
-        '''for i in range(batch_size):
-            res2[i,0:64]*=qp_list[i]'''
-
         res2=self.fc1(res2)
         res2=self.relu(res2)
         res2=self.fc2(res2)
@@ -86,8 +81,6 @@ class subnet3(nn.Module):
         self.atten_module_2=nn.Parameter(torch.ones(atten_input,64))
     def forward(self,x,qp_list):
         res=x.clone()
-        '''for i in range(batch_size):
-            res[i,0:8,:,:]*=qp_list[i]'''
         atten_value_1=self.atten_module_1[qp_list]
         res=res*(atten_value_1.view(atten_value_1.shape[0],atten_value_1.shape[1],1,1))
         res=self.Conv1(res)
@@ -95,8 +88,6 @@ class subnet3(nn.Module):
         res=self.Conv3(res)
         res=res.view(x.shape[0],64)
         res2=res.clone()
-        '''for i in range(batch_size):
-            res2[i,0:32]*=qp_list[i]'''
         atten_value_2=self.atten_module_2[qp_list]
         res2=res2*atten_value_2
         res2=self.fc1(res2)
@@ -117,16 +108,12 @@ class subnet4(nn.Module): #min(h,w)==8
         self.atten_module_2=nn.Parameter(torch.ones(atten_input,64))
     def forward(self,x,qp_list):
         res=x.clone()
-        '''for i in range(batch_size):
-            res[i,0:8,:,:]*=qp_list[i]'''
         atten_value_1=self.atten_module_1[qp_list]
         res=res*(atten_value_1.view(atten_value_1.shape[0],atten_value_1.shape[1],1,1))
         res=self.Conv1(res)
         res=self.Conv2(res)
         res=res.view(x.shape[0],64)
         res2=res.clone()
-        '''for i in range(batch_size):
-            res2[i,0:32]*=qp_list[i]'''
         atten_value_2=self.atten_module_2[qp_list]
         res2=res2*atten_value_2
         res2=self.fc1(res2)

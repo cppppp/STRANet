@@ -247,14 +247,6 @@ void EncCu::init( EncLib* pcEncLib, const SPS& sps PARL_PARAM( const int tId ) ,
   m_pcInterSearch->setModeCtrl( m_modeCtrl );
   m_modeCtrl->setInterSearch(m_pcInterSearch);
   m_pcIntraSearch->setModeCtrl( m_modeCtrl );
-  
-  /*string str= "./compressed/"+name.substr(6)+".txt";
-  inputYUVname=name;
-  saved_lmcs=0;
-
-  printf("input %s\n",str.c_str());
-  fp = fopen(str.c_str(), "w"); //my_add*/
-
 }
 
 // ====================================================================================================================
@@ -265,12 +257,6 @@ void EncCu::compressCtu( CodingStructure& cs, const UnitArea& area, const unsign
 {
   m_modeCtrl->initCTUEncoding( *cs.slice );
   cs.treeType = TREE_D;
-
-#if REUSE_ALL
-  memset(reuse_record,0,sizeof(reuse_record));
-#endif
-
-
   cs.slice->m_mapPltCost[0].clear();
   cs.slice->m_mapPltCost[1].clear();
 #if ENABLE_SPLIT_PARALLELISM
@@ -655,73 +641,11 @@ void EncCu::xCompressCU( CodingStructure*& tempCS, CodingStructure*& bestCS, Par
     if(fastpartition[my_POC][uiTPelY/4][uiLPelX/4][(int)tempCS->area.lheight()/4][(int)tempCS->area.lwidth()/4][cansplit_mode][6]==1)has_restrict=false;
     
   }
-#if VERY_FAST_MODE
   if(compBegin != COMPONENT_Y && (int)tempCS->area.lheight()==64 && (int)tempCS->area.lwidth()==64){
     if(chromapartition[my_POC][uiTPelY/64][uiLPelX/64][4]==1)has_restrict=false;
   }
-#endif
-  //检验是否有符合条件的没有被预测
-  /*if(has_restrict && compBegin == COMPONENT_Y && (int)tempCS->area.lheight()>=8 && (int)tempCS->area.lheight()<=32 &&
-    (int)tempCS->area.lwidth()>=8 && (int)tempCS->area.lwidth()<=32 && !((int)tempCS->area.lheight()==8 && (int)tempCS->area.lwidth()==8)
-    && partitioner.currMtDepth < tempCS->pcv->getMaxBtDepth( *tempCS->slice, partitioner.chType ) + partitioner.currImplicitBtDepth){
-      printf("%d %d %d %d \n",uiTPelY,uiLPelX,(int)tempCS->area.lwidth(),(int)tempCS->area.lheight());
-    }*/
 
   m_modeCtrl->initCULevel( partitioner, *tempCS, has_restrict );
-
-  /*if(!has_restrict){
-    printf("%d %d %d %d[original]  ",uiTPelY,uiLPelX,(int)tempCS->area.lwidth(),(int)tempCS->area.lheight());
-    for(int i=0;i<m_modeCtrl->m_ComprCUCtxList.back().testModes.size();i++){
-      printf("%d ",(int)m_modeCtrl->m_ComprCUCtxList.back().testModes[i].type);
-    }
-    printf("\n");
-  }*/
-  //printf("%d %d\n",(int)(compBegin),(int)(COMPONENT_Y)); 1 0 or 0 0
-#if REUSE_ALL  //compBegin == COMPONENT_Y
-  bool can_reuse_all= ((compBegin == COMPONENT_Y && ((int)tempCS->area.lheight()<=16 && (int)tempCS->area.lwidth()<=16 &&
-    !((int)tempCS->area.lheight()==4 && (int)tempCS->area.lwidth()==4))) ||
-    (compBegin != COMPONENT_Y && ((int)tempCS->area.lheight()<=32 && (int)tempCS->area.lwidth()<=32)
-      && (int)tempCS->area.lheight()+(int)tempCS->area.lwidth()>=24)) &&
-    partitioner.currMtDepth < tempCS->pcv->getMaxBtDepth( *tempCS->slice, partitioner.chType ) + partitioner.currImplicitBtDepth;
-  
-  /*if(can_reuse_all){
-    int will_test_mode[6]={0};
-    for(int i=0;i<m_modeCtrl->m_ComprCUCtxList.back().testModes.size();i++){
-        int tmptype=(int)m_modeCtrl->m_ComprCUCtxList.back().testModes[i].type-6;
-        if(tmptype==-1||tmptype==7)tmptype=0;
-        will_test_mode[tmptype]=1;
-      }
-      if (partitioner.currMtDepth >=1){
-        will_test_mode[1]=0;
-      }
-    bool real_no_split= will_test_mode[1]+will_test_mode[2]+will_test_mode[3]+will_test_mode[4]+will_test_mode[5] == 0;
-    bool no_split=partitioner.currMtDepth >= tempCS->pcv->getMaxBtDepth( *tempCS->slice, partitioner.chType ) + partitioner.currImplicitBtDepth;
-    if((int)(real_no_split)+(int)(no_split)==1){
-      printf("%d %d %d %d\n",tempCS->area.lheight(),tempCS->area.lwidth(),uiTPelY,uiLPelX);
-    }
-  }*/
-
-  int will_test_mode[6]={0};
-  if(can_reuse_all){
-    if(!has_restrict){
-      for(int tmp_type=0;tmp_type<6;tmp_type++){
-        will_test_mode[tmp_type]=fastpartition[uiTPelY/4][uiLPelX/4][(int)tempCS->area.lheight()/4][(int)tempCS->area.lwidth()/4][cansplit_mode][tmp_type];
-      }
-    }
-    else{
-      for(int i=0;i<m_modeCtrl->m_ComprCUCtxList.back().testModes.size();i++){
-        int tmptype=(int)m_modeCtrl->m_ComprCUCtxList.back().testModes[i].type-6;
-        if(tmptype==-1||tmptype==7)tmptype=0;
-        will_test_mode[tmptype]=1;
-      }
-      if (partitioner.currMtDepth >=1){
-        will_test_mode[1]=0;
-      }
-    }
-    //if(tempCS->area.lheight()==16 && tempCS->area.lwidth()==16)
-    //  printf("%d,%d,%d,%d,%d,%d\n",)
-  }
-#endif
 
   if( partitioner.currQtDepth == 0 && partitioner.currMtDepth == 0 && !tempCS->slice->isIntra() && ( sps.getUseSBT() || sps.getUseInterMTS() ) )
   {
@@ -814,43 +738,15 @@ void EncCu::xCompressCU( CodingStructure*& tempCS, CodingStructure*& bestCS, Par
     if(temp==-1 || temp==7)temp=0;
     ComprCUCtx& cuECtx=m_modeCtrl->m_ComprCUCtxList.back();
 
-#if VERY_FAST_MODE //temp!=0 && 
+     //temp!=0 && 
     if( temp!=0 && !has_restrict && temp<=5 && temp>=0 && ((compBegin==COMPONENT_Y &&
         fastpartition[my_POC][uiTPelY/4][uiLPelX/4][(int)tempCS->area.lheight()/4][(int)tempCS->area.lwidth()/4][cansplit_mode][temp]==0) ||
-        (compBegin!=COMPONENT_Y && chromapartition[my_POC][uiTPelY/64][uiLPelX/64][temp]==0))){ //uiLPelX是宽
-#else
-    if( temp!=0 && !has_restrict && temp<=5 && temp>=0 &&
-        fastpartition[my_POC][uiTPelY/4][uiLPelX/4][(int)tempCS->area.lheight()/4][(int)tempCS->area.lwidth()/4][cansplit_mode][temp]==0){ //uiLPelX是宽
-#endif
-      if(temp==1){cuECtx.set(2,false);}
+        (compBegin!=COMPONENT_Y && chromapartition[my_POC][uiTPelY/64][uiLPelX/64][temp]==0))){
+      if(temp==1)cuECtx.set(2,false);
       if(temp==2)cuECtx.set(0,false);
       if(temp==3)cuECtx.set(1,false);
       continue;
     } //my_add  
-    //if(compBegin==COMPONENT_Y && (int)tempCS->area.lheight()==8 && (int)tempCS->area.lwidth()==8 && temp!=0)continue;
-
-#if REUSE_ALL
-  //if(temp!=0 && can_reuse_all){
-  if(can_reuse_all){
-    int i=0;
-    for(i=0;i<6;i++){
-      if(will_test_mode[i]==1 && 
-        reuse_record[(int)compBegin][(uiTPelY%128)/4][(uiLPelX%128)/4][(int)tempCS->area.lheight()/4][(int)tempCS->area.lwidth()/4][temp][i]==1){
-        if(temp==1){cuECtx.set(2,false);}
-        if(temp==2){
-          cuECtx.set(0,false);
-          //cuECtx.set(7, true);
-        }
-        if(temp==3){
-          cuECtx.set(1,false);
-          //cuECtx.set(8, true);
-        }
-        break;
-      }
-    }
-    if(i!=6)continue;
-  }
-#endif
 
     tried=temp;
     
@@ -1078,29 +974,6 @@ void EncCu::xCompressCU( CodingStructure*& tempCS, CodingStructure*& bestCS, Par
     }
     printf("\n");
   }
-
-#if REUSE_ALL
-  //补充新的最好划分
-  if(can_reuse_all && tried==-1){
-    printf("error2:%d %d %d %d %d\n",uiTPelY,uiLPelX,(int)tempCS->area.lwidth(),(int)tempCS->area.lheight(),tried);
-    for(int i=0;i<6;i++){
-      printf("%d ",fastpartition[uiTPelY/4][uiLPelX/4][(int)tempCS->area.lheight()/4][(int)tempCS->area.lwidth()/4][cansplit_mode][i]);
-    }
-    printf("\n");
-  }
-
-  if(can_reuse_all){
-    int bestType=0;
-    if (bestCS->cus.size() != 1){
-      bestType=CU::getSplitAtDepth(*(bestCS->cus[0]),partitioner.currDepth);
-    }
-    for(int i=0;i<6;i++){
-      if(will_test_mode[i]==1 && i!=bestType){
-        reuse_record[(int)compBegin][(uiTPelY%128)/4][(uiLPelX%128)/4][(int)tempCS->area.lheight()/4][(int)tempCS->area.lwidth()/4][i][bestType]=1;
-      }
-    }
-  }
-#endif
 
   //////////////////////////////////////////////////////////////////////////
   // Finishing CU

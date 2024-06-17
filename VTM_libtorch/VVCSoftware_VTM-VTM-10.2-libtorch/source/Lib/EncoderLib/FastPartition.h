@@ -19,7 +19,7 @@ public:
 
   torch::Tensor tmp;
   
-  torch::Tensor feature_tensor[5];//保存中间数据
+  torch::Tensor feature_tensor[5];
   float *feature_maps[5];
   
   std::vector<torch::jit::IValue> input;

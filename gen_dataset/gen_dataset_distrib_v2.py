@@ -216,7 +216,7 @@ for qp in [37, 32, 27, 22]:
                                 normed[idx].append(1000000000000000)
 
                     for j in range(6):
-                        #for modes not tried, set rdcost to a large number
+                        #for modes not tried, set rdcost to a large number, so that its probability will be zero
                         if normed[0][j]==1000000000000000:
                             tmp_distrib.append(1000000000000000)
                             tmp_distrib.append(2000)
@@ -236,7 +236,7 @@ for qp in [37, 32, 27, 22]:
                         tmp_distrib.append(avg)
                         tmp_distrib.append(var)
                     
-                    prob[mode][res_key]=cal_prob_v2(tmp_distrib)
+                    prob[mode][res_key] = cal_prob_v2(tmp_distrib)
 
             output_dict['prob']=prob
             with open('./real_prob_collected_'+str(cuSize)+'/'+str(qp)+'/'+file.split("/")[-1].split(".")[0]+".json","w") as write_file:

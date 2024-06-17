@@ -14,10 +14,10 @@ batch_size_3=512
 batch_size_4=512
 batch_size_5=512
 
-speed_choice="C2/"
+speed_choice="depre/"
 thres=0.15
 
-def main(file_name, model_path):
+def main(file_name, model_path, is_Window):
     if not os.path.exists("./"+speed_choice):
         os.mkdir("./"+speed_choice)
     if not os.path.exists("./"+speed_choice+file_name.split("/")[-1]):
@@ -31,19 +31,26 @@ def main(file_name, model_path):
         start_time=time.time()
         #build model
         res=[]
-        res.append(single_conv(ch_in=1,ch_out=16))
-        res.append(Win_noShift_Attention(dim=16, window_size=(8,8),num_heads=4))
-        res.append(single_conv(ch_in=1,ch_out=16))
-        res.append(Win_noShift_Attention(dim=16, window_size=(16,16),num_heads=4))
-        res.append(single_conv(ch_in=1,ch_out=16))
-        res.append(Win_noShift_Attention(dim=16, window_size=(4,8),num_heads=4))
-        res.append(single_conv(ch_in=1,ch_out=16))
-        res.append(Win_noShift_Attention(dim=16, window_size=(8,32),num_heads=4))
-        res.append(single_conv(ch_in=1,ch_out=16))
-        res.append(Win_noShift_Attention(dim=16, window_size=(8,16),num_heads=4))
-        res.append(single_conv(ch_in=3,ch_out=16))
-        res.append(Win_noShift_Attention(dim=16, window_size=(8,8),num_heads=4))
-
+        if is_Window:
+            res.append(single_conv(ch_in=1,ch_out=16))
+            res.append(Win_noShift_Attention(dim=16, window_size=(8,8),num_heads=4))
+            res.append(single_conv(ch_in=1,ch_out=16))
+            res.append(Win_noShift_Attention(dim=16, window_size=(16,16),num_heads=4))
+            res.append(single_conv(ch_in=1,ch_out=16))
+            res.append(Win_noShift_Attention(dim=16, window_size=(4,8),num_heads=4))
+            res.append(single_conv(ch_in=1,ch_out=16))
+            res.append(Win_noShift_Attention(dim=16, window_size=(8,32),num_heads=4))
+            res.append(single_conv(ch_in=1,ch_out=16))
+            res.append(Win_noShift_Attention(dim=16, window_size=(8,16),num_heads=4))
+            res.append(single_conv(ch_in=3,ch_out=16))
+            res.append(Win_noShift_Attention(dim=16, window_size=(8,8),num_heads=4))
+        else:
+            for i in range(5):
+                res.append(res12(1))#mt
+                res.append(res3(16))
+            res.append(res12(3))#mt
+            res.append(res3(16))
+        
         subnet=[]
         subnet.append(subnet2(6))
         subnet.append(subnet3(6))
@@ -435,8 +442,9 @@ def main(file_name, model_path):
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
-    parser.add_argument('--model_path', type=str, default="./trained_models/")
+    parser.add_argument('--model_path', type=str, default="./trained_models_Window/")
     parser.add_argument('--seq_path', type=str, default="/S3/hzj/yuv/720p/")
+    parser.add_argument('--is_Window', type=int, default=1)
     config = parser.parse_args()
     video_list=[
         "Johnny_1280x720_60.yuv"
@@ -471,6 +479,6 @@ if __name__ == '__main__':
     for video_item in video_list:
         print(video_item,"start")
         start=time.time()
-        time_sum+=main(config.seq_path+video_item,config.model_path)
+        time_sum+=main(config.seq_path+video_item,config.model_path,config.is_Window)
         print(time.time()-start)
     print("average:",time_sum/22)

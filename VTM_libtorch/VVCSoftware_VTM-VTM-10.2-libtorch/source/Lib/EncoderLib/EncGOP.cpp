@@ -1979,22 +1979,12 @@ void EncGOP::compressGOP( EncCu* m_cCuEncoder,int iPOCLast, int iNumPicRcvd, Pic
   //my_add
   //memset(m_cCuEncoder->fastpartition,0,sizeof(m_cCuEncoder->fastpartition));
   if(m_cCuEncoder->init_flag==0){
-    printf("init flag!!!\n");
     string name=m_pcEncLib->EncLib_inputYUVname;
-    name=name.substr(name.rfind("/"));
     int qp=(m_cCuEncoder->m_pcEncCfg->getBaseQP()-22)/5;
-    
-    //TODO:传入picture指针 pcPic->cs->getOrgBuf
-    string str= "/home/user/download/yuv"+name;
-
-    printf("input %s\n",str.c_str());
-
-    //auto sT = std::chrono::system_clock::now();  
-    ifstream in(str, ios::binary);
+    printf("input %s\n",name.c_str());
+    ifstream in(name, ios::binary);
     int cfg_width=m_cCuEncoder->m_pcEncCfg->getSourceWidth();
     int cfg_height=m_cCuEncoder->m_pcEncCfg->getSourceHeight();
-
-    //auto sT = std::chrono::system_clock::now();
 
     myFastPartition.org_imageBatch = torch::ones({4, 1, cfg_height, cfg_width});
     myFastPartition.pImageBatch = myFastPartition.org_imageBatch.data_ptr<float>(); 
@@ -2002,8 +1992,8 @@ void EncGOP::compressGOP( EncCu* m_cCuEncoder,int iPOCLast, int iNumPicRcvd, Pic
     myFastPartition.uv_imageBatch = torch::ones({4, 2, cfg_height/2, cfg_width/2});
     myFastPartition.uv_pImageBatch = myFastPartition.uv_imageBatch.data_ptr<float>(); 
     
+    //bool is_8bit=true;
     bool is_8bit=true;
-    //bool is_8bit=false;
     int inFrameSize = cfg_width*cfg_height;
     in.seekg(0, ios::end);
     in.seekg(0, ios::beg);
@@ -2059,72 +2049,8 @@ void EncGOP::compressGOP( EncCu* m_cCuEncoder,int iPOCLast, int iNumPicRcvd, Pic
 
     }
 
-    myFastPartition.init_luma_feature_maps(cfg_width,cfg_height,qp,m_cCuEncoder->fastpartition,m_cCuEncoder->chromapartition);
-    //auto eT = std::chrono::system_clock::now();
-    //auto duration = std::chrono::duration_cast<std::chrono::microseconds>(eT - sT).count();
-    //printf("%d\n",(int)duration);
-    //根据文件名获取长和宽
-
-    /*ifstream ifs;
-    ifs.open("/home/user/scheme-10.27/prob-network-v2"+name+"/"+std::to_string(qp)+".txt");
-    int posh,posw,cuh,cuw,mode,frame_num;
-    while(ifs>>frame_num>>posh>>posw>>cuh>>cuw>>mode){
-      if(posh==-1)break;
-#if VERY_FAST_MODE
-      if(cuh==0){
-        for(int i=0;i<4;i++){
-          ifs>>m_cCuEncoder->chromapartition[frame_num][posh/64][posw/64][i];
-        }
-        ifs>>cuh>>cuw;
-        m_cCuEncoder->chromapartition[frame_num][posh/64][posw/64][4]=1;
-      }
-      else{
-#endif
-        for(int i=0;i<6;i++){
-          ifs>>m_cCuEncoder->fastpartition[frame_num][posh/4][posw/4][cuh/4][cuw/4][mode][i];
-        }
-        m_cCuEncoder->fastpartition[frame_num][posh/4][posw/4][cuh/4][cuw/4][mode][6]=1;
-#if VERY_FAST_MODE
-      }
-#endif
-    }*/
-
-    /*int check=-1;
-    int countii=0;
-    while(ifs>>frame_num>>posh>>posw>>cuh>>cuw>>mode){
-      if(posh==-1)break;
-#if VERY_FAST_MODE
-      if(cuh==0){
-        for(int i=0;i<4;i++){
-          ifs>>check;
-          if(check!=(m_cCuEncoder->chromapartition[frame_num][posh/64][posw/64][i]) && countii<200){
-            printf("chroma:%d %d\n",posh,posw);
-            countii++;
-          }
-        }
-        ifs>>cuh>>cuw;
-        m_cCuEncoder->chromapartition[frame_num][posh/64][posw/64][4]=1;
-      }
-      else{
-#endif
-        for(int i=0;i<6;i++){
-          ifs>>check;
-          if(check!=(m_cCuEncoder->fastpartition[frame_num][posh/4][posw/4][cuh/4][cuw/4][mode][i]) && countii<200){
-            printf("%d %d %d %d %d\n",posh,posw,cuh,cuw,mode);
-            printf("%d %d %d %d %d %d\n",m_cCuEncoder->fastpartition[frame_num][posh/4][posw/4][cuh/4][cuw/4][mode][0],
-            m_cCuEncoder->fastpartition[frame_num][posh/4][posw/4][cuh/4][cuw/4][mode][1],
-            m_cCuEncoder->fastpartition[frame_num][posh/4][posw/4][cuh/4][cuw/4][mode][2],
-            m_cCuEncoder->fastpartition[frame_num][posh/4][posw/4][cuh/4][cuw/4][mode][3],
-            m_cCuEncoder->fastpartition[frame_num][posh/4][posw/4][cuh/4][cuw/4][mode][4],
-            m_cCuEncoder->fastpartition[frame_num][posh/4][posw/4][cuh/4][cuw/4][mode][5]);
-            countii++;
-          }
-        }
-        m_cCuEncoder->fastpartition[frame_num][posh/4][posw/4][cuh/4][cuw/4][mode][6]=1;
-#if VERY_FAST_MODE
-      }
-#endif
-    }*/
+    myFastPartition.init_luma_feature_maps(cfg_width, cfg_height, qp, m_cCuEncoder->fastpartition,
+                                           m_cCuEncoder->chromapartition);
 
     m_cCuEncoder->my_POC=-1;
     m_cCuEncoder->init_flag=1;

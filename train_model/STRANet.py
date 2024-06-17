@@ -33,6 +33,5 @@ if __name__ == '__main__':
     parser.add_argument('--model_path', type=str, default='./trained_models/10-17-models')
     parser.add_argument('--cuSize', type=int, default=5, help="cuSize=0 32x32, cuSize=1 16x16, cuSize=2 16x32 \
                                                                cuSize=3 8x32 cuSize=4 8x16 cuSize=5 chroma")
-    parser.add_argument('--isDebug', type=bool, default=False)
     config = parser.parse_args()
     main(config)

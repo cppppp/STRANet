@@ -55,8 +55,6 @@
 
 
 //########### place macros to be be kept below this line ###############
-#define REUSE_ALL                                      0  
-#define VERY_FAST_MODE                                 1
 #define JVET_S0257_DUMP_360SEI_MESSAGE                    1 // Software support of 360 SEI messages
 
 #define JVET_R0351_HIGH_BIT_DEPTH_ENABLED                 0 // JVET-R0351: high bit depth coding enabled (increases accuracies of some calculations, e.g. transforms)

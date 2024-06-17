@@ -147,7 +147,7 @@ void EncCu::create( EncCfg* encCfg )
 
 void EncCu::destroy()
 {
-  //fclose(fp);
+  fclose(fp); //my_add
   unsigned numWidths  = gp_sizeIdxInfo->numWidths();
   unsigned numHeights = gp_sizeIdxInfo->numHeights();
 
@@ -681,9 +681,9 @@ void EncCu::xCompressCU( CodingStructure*& tempCS, CodingStructure*& bestCS, Par
     }
   }
   
-  //my_add
-  double csValueArr[6] = { 0, 0, 0, 0, 0, 0 }; //12.25add
-  double costBestLast   = MAX_DOUBLE; //12.25add
+  //my_add 12.25add
+  double csValueArr[6] = { 0, 0, 0, 0, 0, 0 };
+  double costBestLast   = MAX_DOUBLE;
 
   do
   {
@@ -914,8 +914,8 @@ void EncCu::xCompressCU( CodingStructure*& tempCS, CodingStructure*& bestCS, Par
     }
 
     // 12.25add
-    /*double currModeCost;
-    if (bestCS->cost < costBestLast) //如果当前这个是最好的,更新costBestLast
+    double currModeCost;
+    if (bestCS->cost < costBestLast)
     {
       currModeCost = bestCS->cost;
       costBestLast = bestCS->cost;
@@ -949,12 +949,12 @@ void EncCu::xCompressCU( CodingStructure*& tempCS, CodingStructure*& bestCS, Par
       csValueArr[5] = currModeCost;
       break;
     default: break;
-    }*/
+    }
 
   } while( m_modeCtrl->nextMode( *tempCS, partitioner ) );
   
-  //my_add
-  /*int channel=compBegin;
+  //my_add //12.25add
+  int channel=compBegin;
   //if(compBegin == COMPONENT_Y && tempCS->area.lheight()<=32 && tempCS->area.lwidth()<=32 && 
   //   tempCS->area.lheight()>=16 && tempCS->area.lwidth()>=16){
   if((compBegin == COMPONENT_Y && tempCS->area.lheight()<=32 && tempCS->area.lwidth()<=32 && tempCS->area.lheight()>=8 && tempCS->area.lwidth()>=8) ||
@@ -985,7 +985,7 @@ void EncCu::xCompressCU( CodingStructure*& tempCS, CodingStructure*& bestCS, Par
       fwrite(&csValueArr, sizeof(double), 6, fp);
       fwrite(&channel, sizeof(bool), 1, fp);
     }
-  }*/ //12.25add
+  }
 
   //////////////////////////////////////////////////////////////////////////
   // Finishing CU

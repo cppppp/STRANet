@@ -6,6 +6,26 @@ import numpy as np
 OUTNUM=6
 batch_size=32
 
+class subset(nn.Module):
+    def __init__(self,ch_in,ch_out):
+        super(subset,self).__init__()
+        self.ch_in=ch_in
+        self.ch_out=ch_out
+        self.net = nn.Sequential(
+            nn.Conv2d(ch_in, ch_out, kernel_size=3,stride=1,padding=1,bias=True),
+            nn.BatchNorm2d(ch_out),
+            nn.ReLU(inplace=True),
+            nn.Conv2d(ch_out, ch_out, kernel_size=3,stride=1,padding=1,bias=True),
+            nn.BatchNorm2d(ch_out),
+            nn.ReLU(inplace=True),
+        )
+        self.cov = nn.Conv2d(self.ch_in, self.ch_out, kernel_size=1,stride=1,padding=0,bias=True)
+        self.rel = nn.ReLU(inplace=True)
+
+    def forward(self,x):
+        x1 = self.net(x)
+        x3 = x1 + x
+        return x3
 class single_conv(nn.Module):
     def __init__(self,ch_in,ch_out,kernel_size=3,stride2=1,padding2=1):
         super(single_conv,self).__init__()
@@ -42,7 +62,6 @@ class subnet2(nn.Module):
 
         atten_value_2=self.atten_module_2[qp_list]
         res2=res2*atten_value_2
-
         res2=self.fc1(res2)
         res2=self.relu(res2)
         res2=self.fc2(res2)
@@ -100,3 +119,25 @@ class subnet4(nn.Module): #min(h,w)==8
         res2=self.relu(res2)
         res2=self.fc2(res2)
         return res2
+
+class res12(nn.Module):
+    def __init__(self,ch_in):
+        super(res12,self).__init__()
+        indim=16
+        self.Conv1 = single_conv(ch_in=ch_in,ch_out=indim)
+        self.subset1=subset(ch_in=indim,ch_out=indim)
+        self.subset2=subset(ch_in=indim,ch_out=indim)
+        
+    def forward(self,x):
+        res=self.Conv1(x)
+        res=self.subset1(res)
+        res=self.subset2(res)
+        return res
+class res3(nn.Module):
+    def __init__(self,indim):
+        super(res3,self).__init__()
+        self.subset=subset(ch_in=indim,ch_out=indim)
+        
+    def forward(self,x):
+        res=self.subset(x)
+        return res

@@ -134,10 +134,6 @@ class ImageFolder1(data.Dataset):
                 self.yuv_path_list = np.array(self.yuv_list)[val_list_index]
 
             for i,path in enumerate(self.yuv_path_list):
-                if self.debug=='debug':
-                    if i==50:
-                        print("break")
-                        break
                 with open(path,"r") as write_file:
                     cu_pic=json.load(write_file)
 
@@ -167,7 +163,6 @@ class ImageFolder1(data.Dataset):
                         for idx,par_mode in enumerate(splits):
                             gt[idx]=par_mode    
                             sum_prob+=par_mode
-                        
                         gt/=sum_prob
                         data_item['gt']=gt
                         
