@@ -1865,6 +1865,7 @@ bool EncCu::xCheckRDCostIntra(CodingStructure *&tempCS, CodingStructure *&bestCS
                                           : cu.rootCbf;
             if( cbfAtZeroDepth )
             {
+              tempCS->cost = MAX_DOUBLE;
               tmpCostWithoutSplitFlags = MAX_DOUBLE;
             }
           }
