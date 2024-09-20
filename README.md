@@ -8,10 +8,7 @@ This repository includes:
 ## Usage
 - To generate the dataset, first use gen_dataset/flip.py to generate eight rotation types. Then use gen_dataset/VVCSoftware_VTM-VTM-10.2-dataset to get the ground truth partition modes. Finally, run gen_dataset_distrib_v2.py to get the probabilities for each partition mode.
 - To train the model, run train_model/STRANet.py
-- Partition modes are first predicted by 'gen_file/gen_file.py', command:
-```
-python gen_file.py --model_path="./trained_models_Window/" --seq_path="./yuv/"
-```
+- Partition modes are first predicted by 'gen_file/gen_file.py' (exmaples are availble at gen_file/C2), then 'gen_file/split_txt.py' can be used to split a txt into several txts, each for a frame. 
 - Use VVCSoftware_VTM-VTM-10.2-fast for fast intra coding. Before encoding, search for 'your_path' in source/Lib/EncoderLib/EncGOP.cpp to edit it to your folder path for the predicted partition modes.
 - See [VTM_libtorch/README.md](./VTM_libtorch/README.md) for the LibTorch version's Usage
 ## Requirements and Dependencies

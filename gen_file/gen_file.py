@@ -14,10 +14,10 @@ batch_size_3=512
 batch_size_4=512
 batch_size_5=512
 
-speed_choice="depre/"
+speed_choice="C2/"
 thres=0.15
 
-def main(file_name, model_path, is_Window):
+def main(file_name, model_path, is_Window, tot_frm):
     if not os.path.exists("./"+speed_choice):
         os.mkdir("./"+speed_choice)
     if not os.path.exists("./"+speed_choice+file_name.split("/")[-1]):
@@ -78,7 +78,7 @@ def main(file_name, model_path, is_Window):
         cus={} #key:frame,cux,cuy,cuh,cuw value:predicted partitions
 
         max_pool=torch.nn.MaxPool2d((2,2))
-        y, u, v = import_yuv_4frame(file_name, img_h, img_w, 4, yuv_type='420p', start_frm=0, only_y=False)
+        y, u, v = import_yuv_4frame(file_name, img_h, img_w, tot_frm, yuv_type='420p', start_frm=0, only_y=False)
         y=torch.unsqueeze(torch.tensor(y),1).float()
         y_down=max_pool(y)
         u=torch.unsqueeze(torch.tensor(u),1)
@@ -90,7 +90,7 @@ def main(file_name, model_path, is_Window):
 
         input_list=[]
         pos_list=[]
-        for frame in range(4):
+        for frame in range(tot_frm):
             for h in range(yuv_input.shape[3]//32):
                 for w in range(yuv_input.shape[4]//32):
                     input_list.append(yuv_input[frame,:,:,h*32:h*32+32,w*32:w*32+32])
@@ -123,7 +123,7 @@ def main(file_name, model_path, is_Window):
         pos_list=[]
         
         # crop to 32x32
-        for frame in range(4):
+        for frame in range(tot_frm):
             for h in range(y.shape[3]//32):
                 for w in range(y.shape[4]//32):
                     input_list.append(y[frame,:,:,h*32:h*32+32,w*32:w*32+32])
@@ -445,6 +445,7 @@ if __name__ == '__main__':
     parser.add_argument('--model_path', type=str, default="./trained_models_Window/")
     parser.add_argument('--seq_path', type=str, default="/S3/hzj/yuv/720p/")
     parser.add_argument('--is_Window', type=int, default=1)
+    parser.add_argument('--tot_frm', type=int, default=4)
     config = parser.parse_args()
     video_list=[
         "Johnny_1280x720_60.yuv"
@@ -479,6 +480,6 @@ if __name__ == '__main__':
     for video_item in video_list:
         print(video_item,"start")
         start=time.time()
-        time_sum+=main(config.seq_path+video_item,config.model_path,config.is_Window)
+        time_sum+=main(config.seq_path+video_item,config.model_path,config.is_Window,config.tot_frm)
         print(time.time()-start)
     print("average:",time_sum/22)

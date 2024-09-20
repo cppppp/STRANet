@@ -1981,7 +1981,7 @@ void EncGOP::compressGOP( EncCu* m_cCuEncoder,int iPOCLast, int iNumPicRcvd, Pic
     name=name.substr(name.rfind("/"));
     int qp=(m_cCuEncoder->m_pcEncCfg->getBaseQP()-22)/5;
     ifstream ifs;
-    ifs.open("your_path"+name+"/"+std::to_string(qp)+".txt");
+    ifs.open("/S3/sty/STRANet/gen_file/C2"+name+"/"+std::to_string(qp)+".txt");
     int posh,posw,cuh,cuw,mode,frame_num;
     while(ifs>>frame_num>>posh>>posw>>cuh>>cuw>>mode){
       if(posh==-1)break;
