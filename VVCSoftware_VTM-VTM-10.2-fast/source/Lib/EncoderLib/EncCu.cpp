@@ -220,7 +220,6 @@ EncCu::~EncCu()
  */
 void EncCu::init( EncLib* pcEncLib, const SPS& sps PARL_PARAM( const int tId ) ,string name)
 {
-  init_flag=0; //my_add
   m_pcEncCfg           = pcEncLib;
   m_pcIntraSearch      = pcEncLib->getIntraSearch( PARL_PARAM0( tId ) );
   m_pcInterSearch      = pcEncLib->getInterSearch( PARL_PARAM0( tId ) );
@@ -638,10 +637,13 @@ void EncCu::xCompressCU( CodingStructure*& tempCS, CodingStructure*& bestCS, Par
       else if(last_split==4 && partitioner.currPartIdx() == 1) cansplit_mode=1;
       else cansplit_mode=2;
     }
-    if(fastpartition[my_POC][uiTPelY/4][uiLPelX/4][(int)tempCS->area.lheight()/4][(int)tempCS->area.lwidth()/4][cansplit_mode][6]==1)has_restrict=false;
+    if(fastpartition[uiTPelY/4][uiLPelX/4][(int)tempCS->area.lheight()/4][(int)tempCS->area.lwidth()/4][cansplit_mode]){
+      has_restrict=false;
+      //printf("%d\n",fastpartition[uiTPelY/4][uiLPelX/4][(int)tempCS->area.lheight()/4][(int)tempCS->area.lwidth()/4][cansplit_mode]);
+    }
   }
   if(compBegin != COMPONENT_Y && (int)tempCS->area.lheight()==64 && (int)tempCS->area.lwidth()==64){
-    if(chromapartition[my_POC][uiTPelY/64][uiLPelX/64][4]==1)has_restrict=false;
+    if(chromapartition[uiTPelY/64][uiLPelX/64][4]==1)has_restrict=false;
   }
 
   m_modeCtrl->initCULevel( partitioner, *tempCS, has_restrict );
@@ -736,8 +738,8 @@ void EncCu::xCompressCU( CodingStructure*& tempCS, CodingStructure*& bestCS, Par
     ComprCUCtx& cuECtx=m_modeCtrl->m_ComprCUCtxList.back();
 
     if( temp!=0 && !has_restrict && temp<=5 && temp>=0 && ((compBegin==COMPONENT_Y &&
-        fastpartition[my_POC][uiTPelY/4][uiLPelX/4][(int)tempCS->area.lheight()/4][(int)tempCS->area.lwidth()/4][cansplit_mode][temp]==0) ||
-        (compBegin!=COMPONENT_Y && chromapartition[my_POC][uiTPelY/64][uiLPelX/64][temp]==0))){
+        (fastpartition[uiTPelY/4][uiLPelX/4][(int)tempCS->area.lheight()/4][(int)tempCS->area.lwidth()/4][cansplit_mode]>>temp & 1)==0) ||
+        (compBegin!=COMPONENT_Y && chromapartition[uiTPelY/64][uiLPelX/64][temp]==0))){
       if(temp==1)cuECtx.set(2,false);
       if(temp==2)cuECtx.set(0,false);
       if(temp==3)cuECtx.set(1,false);
@@ -1865,7 +1867,7 @@ bool EncCu::xCheckRDCostIntra(CodingStructure *&tempCS, CodingStructure *&bestCS
                                           : cu.rootCbf;
             if( cbfAtZeroDepth )
             {
-              tempCS->cost = MAX_DOUBLE; 
+              tempCS->cost = MAX_DOUBLE;
               tmpCostWithoutSplitFlags = MAX_DOUBLE;
             }
           }

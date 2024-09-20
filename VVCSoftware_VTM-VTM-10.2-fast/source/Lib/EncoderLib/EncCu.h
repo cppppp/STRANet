@@ -153,8 +153,8 @@ public:
   EncCfg*               m_pcEncCfg;
   int my_POC;
   int init_flag;
-  int fastpartition[4][550][970][9][9][4][7];
-  int chromapartition[4][40][70][5]; //3840/64 2160/64
+  uint8_t fastpartition[550][970][9][9][4];
+  uint8_t chromapartition[40][70][5]; //3840/64 2160/64
 private:
   FILE* fp;
   string inputYUVname;

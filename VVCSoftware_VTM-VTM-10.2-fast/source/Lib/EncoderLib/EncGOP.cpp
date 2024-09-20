@@ -1977,35 +1977,53 @@ void EncGOP::compressGOP( EncCu* m_cCuEncoder,int iPOCLast, int iNumPicRcvd, Pic
 
   //my_add
   if(m_cCuEncoder->init_flag==0){
-    string name=m_pcEncLib->EncLib_inputYUVname;
-    name=name.substr(name.rfind("/"));
-    int qp=(m_cCuEncoder->m_pcEncCfg->getBaseQP()-22)/5;
-    ifstream ifs;
-    ifs.open("/S3/sty/STRANet/gen_file/C2"+name+"/"+std::to_string(qp)+".txt");
-    int posh,posw,cuh,cuw,mode,frame_num;
-    while(ifs>>frame_num>>posh>>posw>>cuh>>cuw>>mode){
-      if(posh==-1)break;
-      if(cuh==0){
-        for(int i=0;i<4;i++){
-          ifs>>m_cCuEncoder->chromapartition[frame_num][posh/64][posw/64][i];
-        }
-        ifs>>cuh>>cuw;
-        m_cCuEncoder->chromapartition[frame_num][posh/64][posw/64][4]=1;
-      }
-      else{
-        for(int i=0;i<6;i++){
-          ifs>>m_cCuEncoder->fastpartition[frame_num][posh/4][posw/4][cuh/4][cuw/4][mode][i];
-        }
-        m_cCuEncoder->fastpartition[frame_num][posh/4][posw/4][cuh/4][cuw/4][mode][6]=1;
-      }
-    }
     m_cCuEncoder->my_POC=-1;
-    m_cCuEncoder->init_flag=1;
   }
+  m_cCuEncoder->init_flag=1;
+
+  string name;
+  name=m_pcEncLib->EncLib_inputYUVname;
+  name=name.substr(name.rfind("/"));
+  int qp;
+  qp=(m_cCuEncoder->m_pcEncCfg->getBaseQP()-22)/5;
 
   for( int iGOPid = picIdInGOP; iGOPid <= picIdInGOP; iGOPid++ )
   {
-      (m_cCuEncoder->my_POC)+=1;
+    (m_cCuEncoder->my_POC)+=1;
+    memset(m_cCuEncoder->fastpartition,0,sizeof(m_cCuEncoder->fastpartition));
+    memset(m_cCuEncoder->chromapartition,0,sizeof(m_cCuEncoder->chromapartition));
+    //ifs.open("your_path"+name+"/"+std::to_string(qp)+"_"+std::to_string(m_cCuEncoder->my_POC)+".txt");
+    ifstream ifs;
+    ifs.open("your_path"+name+"/"+std::to_string(qp)+"_"+std::to_string(m_cCuEncoder->my_POC)+".txt");
+    //ifs.open("/S3/sty/STRANet/gen_file/C2"+name+"/"+std::to_string(qp)+".txt");
+    int posh,posw,cuh,cuw,mode,frame_num;
+    while(ifs>>frame_num>>posh>>posw>>cuh>>cuw>>mode){
+      if(posh==-1)break;
+      /*if(frame_num!=(m_cCuEncoder->my_POC)){
+        int a;
+        for(int i=0;i<6;i++)ifs>>a;
+        continue;
+      }*/
+      if(cuh==0){
+        for(int i=0;i<4;i++){
+          ifs>>m_cCuEncoder->chromapartition[posh/64][posw/64][i];
+          m_cCuEncoder->chromapartition[posh/64][posw/64][i]-=48;
+        }
+        ifs>>cuh>>cuw;
+        m_cCuEncoder->chromapartition[posh/64][posw/64][4]=1;
+      }
+      else{
+        uint8_t pred = 0;
+        uint8_t tmp_pred = 0;
+        for(int i=0;i<6;i++){
+          ifs >> tmp_pred;
+          pred += ((tmp_pred-48) << i);
+        }
+        m_cCuEncoder->fastpartition[posh/4][posw/4][cuh/4][cuw/4][mode] = pred;
+        //m_cCuEncoder->fastpartition[frame_num][posh/4][posw/4][cuh/4][cuw/4][mode][6]=1;
+      }
+    }
+    ifs.close();
 
     // reset flag indicating whether pictures have been encoded
     m_pcCfg->setEncodedFlag( iGOPid, false );
